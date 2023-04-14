@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default_layout}">
+<head>
+    <meta charset="UTF-8">
+  <title>글쓰기 페이지</title>
+  <style type="text/css">
+	#container{
+		/* background-color: lime; */
+		width:1200px;
+		margin:0 auto;
+	}
+	#container table{
+		width:600px;
+		border-collapse: collapse;
+		margin:0 auto;
+	}
+	#container th{
+		width:150px !important;
+		text-align: right;
+		padding:5px;
+	}
+	#container td{
+		width: 500px;
+		padding:5px;
+		height: 40px;
+	}
+	#container input{
+		width: 100%;
+		height:40px;
+		box-sizing:border-box;
+		border-width : 1px;
+		border-radius: 5px;
+	}
+	h2{
+		text-align: center;
+	}
+	.btn{
+		text-decoration: none;
+		background-color: #e8e8e8;
+		min-width: 80px;
+		display: inline-block;
+		padding:5px 10px;
+		font-weight:normal;
+		border : 1px solid #585858;
+		text-align:center;
+		color : black;
+		font-size:14px;
+		box-sizing: border-box;
+	}
+	.btn:hover{
+		background-color: #282828;
+		color:#FFFFFF
+	}
+	.hate{
+		transform: rotate(0.5turn);
+	}
+	.text_center{
+		text-align: center;
+	}
+	.btn_like{
+		width:64px;
+		display: inline-block;
+		color:black;
+		text-decoration: none;
+	}
+	.comment_form{
+		width:100%;
+		border :1px solid black;
+	}
+	.writer{
+		width: 100%;
+		display: inline-block;
+		font-weight: bold;
+		padding-left: 30px;
+	}
+	.comment_form textarea{
+		width:100%;
+		height: 80px;
+		margin-top:10px;
+		font-size: 18px;
+		padding-left: 30px;
+		padding-right: 30px;
+		outline:none;
+		border: none;
+		resize: none;
+		box-sizing: border-box;
+
+	}
+	.comment_form button{
+		width: 100px;
+		height: 40px;
+		font-weight: bold;
+		background-color: #ffff00;
+		outline:none;
+		border: none;
+	}
+	.comment_form button:hover{
+		background-color: #dfdf25;
+	}
+	.length{
+		text-align: right;
+		padding:10px 30px;
+	}
+	hr{
+	margin:0;
+	}
+	.comment_form p {
+		margin:0;
+	}
+</style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script th:inline="javascript">
+	$(function(){
+	    let tt = 200;
+	    var str = /*<![CDATA[*/`tt=${tt}, [[${board.bno}]]`/*]]>*/;
+	    console.log(str);
+		$(".comment_form textarea").keyup(function() {
+			$(this).next().text($(this).val().length+"/500");
+		});
+		$(".comment_form button").click(function(){
+			var data = $("#comment").serialize();
+			$.ajax({
+				url : "insertComment.do",
+				data : data,
+				method:"get",
+				success:function(d){
+					if(d == 1){
+						alert("댓글 등록 성공");
+					}else{
+						alert("댓글 등록 실패");
+					}
+					location.reload();
+				}
+			});
+		});
+		$(".btn_like").click(function(){
+			// 0 - like, 1 - hate
+			// bno;
+			var obj = $(this);
+			var idx = $(this).index();
+			d = "bno=[[${board.bno}]]&mode="+idx;
+			$.ajax({
+				url : "plusLikeHate.do",
+				data : d,
+				method : "get",
+				success:function(result){
+					var msg = "이 게시물에다가";
+					msg += idx == 0 ? "좋아요를 " : "싫어요를 ";
+					msg += result == 1 ? "하셨습니다." : "취소하셨습니다.";
+					alert(msg);
+					location.reload();
+				}
+			});
+		});
+	});
+</script>
+</head>
+<body>
+<th:block layout:fragment="header" th:include="@{/fragments/header}"></th:block>
+<th:block th:if="${session.login == null or session.login == false  }">
+  <script>
+			alert("로그인을 하셔야 이용할수 있습니다.");
+			location.href="loginView.do";
+		</script>
+</th:block>
+<div id="container">
+  <h2>글조회 페이지</h2>
+  <table>
+    <tr>
+      <th>제목</th>
+      <!-- 조회한 내용 -->
+      <td th:text="${board.title }"></td>
+    </tr>
+    <tr>
+      <th>작성자</th>
+      <td th:text="${board.writer }"></td>
+    </tr>
+    <tr>
+      <th>조회수</th>
+      <td th:text="${board.bCount }"></td>
+    </tr>
+    <tr>
+      <th>작성일</th>
+      <td th:text="${board.bDate }"></td>
+    </tr>
+    <tr>
+      <th style="vertical-align: top;">내용</th>
+      <td th:utext="${board.content }">
+
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        첨부파일<br>
+        <th:block th:each="f : ${flist}">
+
+          <a th:href="@{fileDown.do(fno=${f.fno},bno=${f.bno})}">
+            [[${f.fileName}]]</a><br>
+          <!-- 해당 파일이 이미지인지? -->
+          <th:block th:if="${f.type =='image' }">
+            <img th:src="@{fileDown.do(fno=${f.fno},type=${f.type},bno=${f.bno})}">
+          </th:block>
+          <br>
+        </th:block>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="text_center">
+        <a href="#" class="btn_like">
+          <img src="/img/like.png">
+          <!-- 좋아요 개수 -->
+          <span>[[${board.bLike }]]</span>
+        </a>
+        <a href="#" class="btn_like">
+          <img src="/img/like.png" class="hate">
+          <!-- 싫어요 개수 -->
+          <span>[[${board.bHate }]]</span>
+        </a>
+      </td>
+    </tr>
+    <th:block th:if="${session.login == true}">
+      <tr>
+        <td colspan="2">
+          <div class="comment_form">
+            <form id="comment">
+              <input type="hidden" name="bno" value="${board.bno }">
+              <input type="hidden" name="writer" value="${session.id }">
+              <span class="writer">[[${session.id }]]</span>
+              <textarea name="content" maxlength="500"></textarea>
+              <p class="length">0/500</p><hr>
+              <p style="text-align: right;"><button type="button">등록</button></p>
+            </form>
+          </div>
+        </td>
+      </tr>
+    </th:block>
+    <tr>
+      <th><a href="/main.do" class="btn">목록보기</a></th>
+      <td style="text-align: right;">
+        <th:block th:if="${session.id == board.writer }">
+          <a th:href="@{boardUpdateView.do(bno=${board.bno})}" class="btn">수정</a>
+          <a th:href="@{deleteBoard.do(bno=${board.bno})}" class="btn">삭제</a>
+        </th:block>
+        <th:block th:switch="${other.BEFORE}">
+            <a th:case="-1" class="btn">이전글이 없습니다.</a>
+            <a th:case="*" th:href="@{boardView.do(bno=${other.BEFORE})}" class="btn">이전글</a>
+
+        </th:block>
+        <th:block th:switch="${other.NEXT}">
+            <a th:case="-1" class="btn">다음글이 없습니다.</a>
+            <a th:case="*" th:href="@{boardView.do(bno=${other.NEXT})}" class="btn">다음글</a>
+        </th:block>
+      </td>
+    </tr>
+    <tr>
+
+      <td colspan="2">
+
+        <th:block th:each="comment : ${comment}">
+          <p>[[${comment.writer }]]
+            ${comment.cdate }
+            <a href="commentLike.do?cno=${comment.cno }&bno=${board.bno}">[[${comment.clike }]]</a>
+            <a href="commentHate.do?cno=${comment.cno }&bno=${board.bno}">[[${comment.chate }]]</a>
+            <!-- 댓글 삭제하는 링크 deleteComment.do 댓글 번호를 기준으로 삭제-->
+            <th:block th:if="${session.id == comment.writer or session.grade == 6 }">
+              <a href="@{deleteComment.do(cno=${comment.cno },bno=${board.bno})}">댓글 삭제</a>
+            </th:block>
+          </p>
+          <p>
+            [[${comment.content }]]
+          </p>
+        </th:block>
+
+      </td>
+
+    </tr>
+  </table>
+</div>
+<th:block layout:fragment="header" th:include="@{/fragments/footer}"></th:block>
+
+</body>
+</html>

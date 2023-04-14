@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<style>
+	nav {
+		width:1200px;
+		margin:0 auto;/* 가운데 정렬  */
+		border:1px solid black;
+		text-align: center;
+		position: relative;
+	}
+	ul{
+		list-style-type: none;
+		height: auto;
+		display: inline-block;
+	}
+	li{
+		display: inline-block;
+	}
+	#menu_bar a:link,#menu_bar a:visited {
+		color:black;
+		text-decoration: none;
+		font-size: 17px;
+		text-align: center;
+		padding: 20px 30px;
+	}
+	#login{
+		position: absolute;
+		right: 0px;
+		top:0px;
+		min-width:150px;
+		padding:5px;
+	}
+</style>
+<div th:if="${session.login != null or session.login == true }">
+<nav id="menu_bar">
+  <ul th:if="${session.grade == 6}">
+    <li><a href="main.do">HOME</a></li>
+    <li><a href="logout.do">로그아웃</a></li>
+    <li><a href="memberManageView.do">전체 회원 관리</a></li>
+    <li><a href="qnaAdminView.do">회원문의내역</a></li>
+  </ul>
+  <ul th:if="${session.grade < 6}">
+    <li><a href="main.do">HOME</a></li>
+    <li><a href="logout.do">로그아웃</a></li>
+    <li><a href="qnaView.do">문의하기</a></li>
+    <li><a href="updateView.do">회원정보수정</a></li>
+  </ul>
+  <div id="login">
+    <table>
+      <tr>
+<!--        <td><img th:src="'/img/'+${session.grade}+'.png'" style="width:32px;">[[${session.grade}]]</td>-->
+        <td th:switch="${session.grade}">
+          <img th:case="1" src="/img/bronze.jpg" style="width:16px;">
+          <img th:case="2" src="/img/silver.png" style="width:16px;">
+          <img th:case="3" src="/img/gold.png" style="width:16px;">
+          <img th:case="4" src="/img/vip.png" style="width:16px;">
+          <img th:case="5" src="/img/vvip.png" style="width:16px;">
+          <img th:case="6" src="/img/master.png" style="width:16px;">
+        </td>
+
+
+        <td>[[${session.name }]]님 로그인</td>
+      </tr>
+    </table>
+  </div>
+</nav>
+</div>
+<div th:if="${session.login == null }">
+  <!-- 메뉴부분 -->
+  <style>
+	nav {
+		width:1200px;
+		margin:0 auto;/* 가운데 정렬  */
+		border:1px solid black;
+		text-align: center;
+	}
+	ul{
+		list-style-type: none;
+		height: auto;
+		display: inline-block;
+	}
+	li{
+		display: inline-block;
+	}
+	#menu_bar a:link,#menu_bar a:visited {
+		color:black;
+		text-decoration: none;
+		font-size: 17px;
+		text-align: center;
+		padding: 20px 30px;
+	}
+</style>
+  <nav id="menu_bar">
+    <ul>
+      <li><a href="main.do">HOME</a></li>
+      <li><a href="registerView.do">회원가입</a></li>
+      <li><a href="loginView.do">로그인</a></li>
+      <li><a href="#">문의하기</a></li>
+    </ul>
+  </nav>
+</div>
+</html>
